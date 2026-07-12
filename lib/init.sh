@@ -56,3 +56,9 @@ source "$BDW_ROOT/lib/distro.sh"
 source "$BDW_ROOT/lib/cpu.sh"
 source "$BDW_ROOT/lib/gpu.sh"
 source "$BDW_ROOT/lib/hardware.sh"
+
+# Runtime: pacotes, TUI, estado e módulos
+source "$BDW_ROOT/lib/packages.sh"
+source "$BDW_ROOT/lib/interactive.sh"
+source "$BDW_ROOT/lib/state.sh"
+source "$BDW_ROOT/lib/module.sh"
