@@ -1,0 +1,12 @@
+# ============================================================================
+# BrunoDev Workstation — configuração do Fail2ban
+# ============================================================================
+
+[DEFAULT]
+# Banimento por 1 hora após 5 falhas em 10 minutos
+bantime = 1h
+findtime = 10m
+maxretry = 5
+
+[sshd]
+enabled = true
