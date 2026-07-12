@@ -114,7 +114,9 @@ perfil_listar() {
 perfil_carregar() {
   local nome="$1" arquivo="$BDW_ROOT/configs/profiles/$1.list"
   [[ -f "$arquivo" ]] || log_fatal "Perfil não encontrado: $nome (use --perfis para listar)"
-  grep -Ev '^[[:space:]]*(#|$)' "$arquivo" | tr -d '[:space:]' | grep . || true
+  # Remove comentários/linhas vazias e aparas de cada linha, preservando quebras
+  # de linha (um id de módulo por linha — nunca usar tr -d aqui, apagaria os \n).
+  grep -Ev '^[[:space:]]*(#|$)' "$arquivo" | tr -d '\r' | sed -E 's/^[[:space:]]+|[[:space:]]+$//g'
 }
 
 # Lista módulos agrupados por categoria, marcando os já registrados.

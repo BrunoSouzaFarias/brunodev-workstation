@@ -38,7 +38,8 @@ module_configurar() {
   fs_escrever_root /etc/docker/daemon.json <"$BDW_ROOT/configs/docker/daemon.json"
 
   # Usuário no grupo docker (dispensa sudo para o CLI).
-  local usuario="${SUDO_USER:-$USER}"
+  local usuario
+  usuario="$(usuario_alvo)"
   if ! id -nG "$usuario" | grep -qw docker; then
     como_root groupadd -f docker
     como_root usermod -aG docker "$usuario"

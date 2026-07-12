@@ -52,7 +52,7 @@ module_configurar() {
   # Define o ZSH como shell padrão do usuário.
   local zsh_bin usuario
   zsh_bin="$(command -v zsh)"
-  usuario="${SUDO_USER:-$USER}"
+  usuario="$(usuario_alvo)"
   if [[ "$(getent passwd "$usuario" | cut -d: -f7)" != "$zsh_bin" ]]; then
     como_root chsh -s "$zsh_bin" "$usuario" ||
       log_aviso "Não foi possível trocar o shell padrão; rode: chsh -s $zsh_bin"
@@ -70,7 +70,7 @@ module_reverter() {
   else
     rm -f "$HOME/.zshrc"
   fi
-  como_root chsh -s /bin/bash "${SUDO_USER:-$USER}" || true
+  como_root chsh -s /bin/bash "$(usuario_alvo)" || true
   rm -f "$BDW_DIR_CONFIG/aliases.sh"
   log_aviso "Shell padrão restaurado para bash. Pacotes zsh/starship/fastfetch mantidos."
 }

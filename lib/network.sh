@@ -57,6 +57,11 @@ net_github_ultima_tag() {
 
 # Executa um script remoto de forma controlada: baixa primeiro, depois roda.
 # Mais seguro e depurável que "curl | bash" direto.
+#
+# Executa pelo próprio shebang do script (não força bash): vários
+# instaladores oficiais (uv, Starship, Ollama) usam "#!/bin/sh" e se
+# recusam a rodar sob bash não-POSIX, detectando BASH_VERSION.
+#
 # Uso: net_executar_script_remoto <url> [args...]
 net_executar_script_remoto() {
   local url="$1"
@@ -66,7 +71,7 @@ net_executar_script_remoto() {
   net_baixar "$url" "$script_tmp" || return 1
   chmod +x "$script_tmp"
   local codigo=0
-  executar_logado bash "$script_tmp" "$@" || codigo=$?
+  executar_logado "$script_tmp" "$@" || codigo=$?
   rm -f "$script_tmp"
   return "$codigo"
 }

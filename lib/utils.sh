@@ -49,6 +49,14 @@ eh_root() {
   [[ ${EUID:-$(id -u)} -eq 0 ]]
 }
 
+# Usuário "dono" da sessão: quem chamou sudo, senão $USER, senão o
+# usuário real do processo. $USER não é garantido em todo ambiente
+# (containers root, por exemplo), por isso nunca usar $USER puro sob
+# set -u — sempre passar por esta função.
+usuario_alvo() {
+  printf '%s' "${SUDO_USER:-${USER:-$(id -un)}}"
+}
+
 # Executa um comando com sudo quando necessário (sem sudo se já for root).
 como_root() {
   if eh_root; then

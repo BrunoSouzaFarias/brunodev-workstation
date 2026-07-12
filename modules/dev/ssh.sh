@@ -36,7 +36,7 @@ module_configurar() {
   if [[ ! -f "$_SSH_CHAVE" ]]; then
     local email
     email="$(git config --global user.email 2>/dev/null || true)"
-    email="$(ui_entrada "E-mail para identificar a chave SSH" "${email:-$USER@$(hostname)}")"
+    email="$(ui_entrada "E-mail para identificar a chave SSH" "${email:-$(usuario_alvo)@$(hostname)}")"
     spin_executar "Gerando chave SSH ed25519" \
       ssh-keygen -t ed25519 -C "$email" -f "$_SSH_CHAVE" -N ""
   else
