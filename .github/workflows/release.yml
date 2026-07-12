@@ -1,0 +1,47 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  release:
+    name: Publicar release
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Gerar changelog desde a tag anterior
+        id: changelog
+        run: |
+          TAG_ANTERIOR="$(git describe --tags --abbrev=0 "${GITHUB_REF_NAME}^" 2>/dev/null || true)"
+          {
+            echo "trecho<<FIM_CHANGELOG"
+            if [[ -n "$TAG_ANTERIOR" ]]; then
+              git log --pretty='- %s (%h)' "${TAG_ANTERIOR}..${GITHUB_REF_NAME}"
+            else
+              git log --pretty='- %s (%h)' "${GITHUB_REF_NAME}"
+            fi
+            echo "FIM_CHANGELOG"
+          } >>"$GITHUB_OUTPUT"
+
+      - name: Criar release no GitHub
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ github.ref_name }}
+          generate_release_notes: true
+          body: |
+            ## Mudanças
+
+            ${{ steps.changelog.outputs.trecho }}
+
+            ## Instalação
+
+            ```bash
+            bash <(curl -fsSL https://raw.githubusercontent.com/BrunoSouzaFarias/brunodev-workstation/${{ github.ref_name }}/install.sh)
+            ```

@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Cancela execuções antigas do mesmo PR/branch ao chegar um push novo.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  shellcheck:
+    name: ShellCheck
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Instalar ShellCheck
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck
+      - name: Rodar ShellCheck em todos os scripts versionados
+        run: |
+          mapfile -t arquivos < <(git ls-files '*.sh' 'configs/backup/backup.conf')
+          shellcheck -x "${arquivos[@]}"
+
+  shfmt:
+    name: shfmt (formatação)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Instalar shfmt
+        run: |
+          curl -fsSL https://github.com/mvdan/sh/releases/download/v3.10.0/shfmt_v3.10.0_linux_amd64 \
+            -o /usr/local/bin/shfmt
+          chmod +x /usr/local/bin/shfmt
+      - name: Verificar formatação (scripts)
+        run: |
+          mapfile -t arquivos < <(git ls-files '*.sh')
+          shfmt -i 2 -ci -d "${arquivos[@]}"
+      - name: Verificar formatação (testes bats)
+        run: |
+          mapfile -t arquivos < <(git ls-files '*.bats')
+          shfmt -ln bats -i 2 -ci -d "${arquivos[@]}"
+
+  markdownlint:
+    name: Markdown Lint
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DavidAnson/markdownlint-cli2-action@v18
+        with:
+          globs: "**/*.md"
+
+  testes-unitarios:
+    name: Testes unitários (bats)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rodar testes unitários
+        run: ./tests/run-tests.sh
+
+  teste-integracao:
+    name: Integração E2E (ubuntu:24.04)
+    runs-on: ubuntu-24.04
+    needs: [shellcheck, testes-unitarios]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rodar instalação completa em container
+        run: ./tests/run-tests.sh --integracao

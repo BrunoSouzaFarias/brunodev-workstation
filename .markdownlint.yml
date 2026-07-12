@@ -1,0 +1,12 @@
+# Configuração do markdownlint-cli2 para o projeto
+default: true
+
+# Linhas longas são comuns em comandos de exemplo e tabelas — não travar nisso.
+MD013: false
+
+# Permite HTML inline (usado em badges e detalhes recolhíveis do README).
+MD033: false
+
+# Múltiplos títulos de mesmo nível/texto ocorrem em CHANGELOG.md (versões).
+MD024:
+  siblings_only: true
