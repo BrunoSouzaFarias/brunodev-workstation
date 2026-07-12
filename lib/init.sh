@@ -48,3 +48,11 @@ source "$BDW_ROOT/lib/utils.sh"
 source "$BDW_ROOT/lib/validation.sh"
 source "$BDW_ROOT/lib/spinner.sh"
 source "$BDW_ROOT/lib/progress.sh"
+
+# Detecção de sistema e infraestrutura de arquivos/rede
+source "$BDW_ROOT/lib/filesystem.sh"
+source "$BDW_ROOT/lib/network.sh"
+source "$BDW_ROOT/lib/distro.sh"
+source "$BDW_ROOT/lib/cpu.sh"
+source "$BDW_ROOT/lib/gpu.sh"
+source "$BDW_ROOT/lib/hardware.sh"
