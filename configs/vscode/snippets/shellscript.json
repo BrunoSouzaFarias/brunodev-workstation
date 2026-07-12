@@ -1,0 +1,12 @@
+{
+  "Cabeçalho de script bash seguro": {
+    "prefix": "bashseguro",
+    "body": [
+      "#!/usr/bin/env bash",
+      "set -Eeuo pipefail",
+      "",
+      "$0"
+    ],
+    "description": "Script bash com strict mode"
+  }
+}

@@ -91,7 +91,12 @@ pkg_adicionar_repo_apt() {
     local tmp
     tmp="$(mktemp)"
     net_baixar "$url_chave" "$tmp" || return 1
-    gpg --dearmor <"$tmp" | como_root tee "$chave" >/dev/null
+    # Chaves podem vir em ASCII armor (precisam de dearmor) ou já binárias.
+    if grep -q "BEGIN PGP PUBLIC KEY BLOCK" "$tmp" 2>/dev/null; then
+      gpg --dearmor <"$tmp" | como_root tee "$chave" >/dev/null
+    else
+      como_root cp "$tmp" "$chave"
+    fi
     como_root chmod a+r "$chave"
     rm -f "$tmp"
   fi

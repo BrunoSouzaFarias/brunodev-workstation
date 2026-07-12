@@ -1,0 +1,49 @@
+# >>> brunodev-workstation >>>
+# ~/.zshrc gerado pelo BrunoDev Workstation.
+# Personalizações pessoais: use ~/.zshrc.local (carregado ao final).
+
+# --- Histórico ---------------------------------------------------------------
+HISTFILE="$HOME/.zsh_history"
+HISTSIZE=50000
+SAVEHIST=50000
+setopt HIST_IGNORE_ALL_DUPS HIST_REDUCE_BLANKS SHARE_HISTORY INC_APPEND_HISTORY
+
+# --- Completions ---------------------------------------------------------------
+autoload -Uz compinit && compinit
+zstyle ':completion:*' menu select
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
+
+# --- Plugins (pacotes do sistema) ----------------------------------------------
+[[ -f /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]] &&
+  source /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+[[ -f /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]] &&
+  source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+
+# --- PATH do usuário -------------------------------------------------------------
+export PATH="$HOME/.local/bin:$HOME/.local/share/brunodev/bin:$PATH"
+
+# --- Ferramentas instaladas pelos módulos (carregadas apenas se existirem) -------
+# NVM (Node)
+export NVM_DIR="$HOME/.nvm"
+[[ -s "$NVM_DIR/nvm.sh" ]] && source "$NVM_DIR/nvm.sh"
+
+# SDKMAN (Java/Maven/Gradle)
+export SDKMAN_DIR="$HOME/.sdkman"
+[[ -s "$SDKMAN_DIR/bin/sdkman-init.sh" ]] && source "$SDKMAN_DIR/bin/sdkman-init.sh"
+
+# Bun
+[[ -d "$HOME/.bun" ]] && export BUN_INSTALL="$HOME/.bun" && export PATH="$BUN_INSTALL/bin:$PATH"
+
+# Cargo/uv e afins
+[[ -f "$HOME/.cargo/env" ]] && source "$HOME/.cargo/env"
+
+# --- Aliases ----------------------------------------------------------------------
+[[ -f "$HOME/.config/brunodev/aliases.sh" ]] && source "$HOME/.config/brunodev/aliases.sh"
+
+# --- Prompt e boas-vindas ------------------------------------------------------------
+command -v starship >/dev/null && eval "$(starship init zsh)"
+[[ -o interactive ]] && command -v fastfetch >/dev/null && fastfetch
+
+# --- Personalizações do usuário -------------------------------------------------------
+[[ -f "$HOME/.zshrc.local" ]] && source "$HOME/.zshrc.local"
+# <<< brunodev-workstation <<<
