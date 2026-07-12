@@ -10,3 +10,6 @@ MD033: false
 # Múltiplos títulos de mesmo nível/texto ocorrem em CHANGELOG.md (versões).
 MD024:
   siblings_only: true
+
+# Estilo de espaçamento em pipes de tabela — não é uma convenção do projeto.
+MD060: false
