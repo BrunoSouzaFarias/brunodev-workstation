@@ -63,7 +63,8 @@ if [[ -z "${_BDW_LIB_MODULE:-}" ]]; then
 
   # Lê um metadado de um módulo (com cache, sem poluir o shell atual).
   # Uso: mod_meta docker BDW_MODULE_NOME
-  declare -A _BDW_META_CACHE
+  # -g: garante escopo global mesmo quando a lib é sourceada dentro de função.
+  declare -gA _BDW_META_CACHE
   mod_meta() {
     local id="$1" campo="$2" chave="$1.$2"
     if [[ -z "${_BDW_META_CACHE[$chave]+x}" ]]; then
@@ -84,8 +85,8 @@ if [[ -z "${_BDW_LIB_MODULE:-}" ]]; then
   }
 
   # --- Resolução de dependências (ordenação topológica) ---------------------
-  _BDW_RESOLVIDOS=()
-  declare -A _BDW_VISITADO
+  declare -ga _BDW_RESOLVIDOS
+  declare -gA _BDW_VISITADO
 
   _mod_visitar() {
     local id="$1"
