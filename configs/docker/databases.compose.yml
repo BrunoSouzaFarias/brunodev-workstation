@@ -1,0 +1,66 @@
+# ============================================================================
+# BrunoDev Workstation — bancos de dados de desenvolvimento
+#
+# Gerenciado pelos módulos databases/*. Senhas em ~/.config/brunodev/databases.env
+# Portas expostas SOMENTE em localhost (127.0.0.1) por segurança.
+# ============================================================================
+
+name: brunodev-databases
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: bdw-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: dev
+      POSTGRES_PASSWORD: ${BDW_POSTGRES_SENHA}
+      POSTGRES_DB: dev
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - bdw-postgres-dados:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dev"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7
+    container_name: bdw-redis
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - bdw-redis-dados:/data
+    command: ["redis-server", "--appendonly", "yes"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mysql:
+    image: mysql:8.4
+    container_name: bdw-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${BDW_MYSQL_SENHA}
+      MYSQL_USER: dev
+      MYSQL_PASSWORD: ${BDW_MYSQL_SENHA}
+      MYSQL_DATABASE: dev
+    ports:
+      - "127.0.0.1:3306:3306"
+    volumes:
+      - bdw-mysql-dados:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  bdw-postgres-dados:
+  bdw-redis-dados:
+  bdw-mysql-dados:

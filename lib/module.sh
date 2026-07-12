@@ -51,11 +51,12 @@ if [[ -z "${_BDW_LIB_MODULE:-}" ]]; then
   }
 
   # Lista os ids de todos os módulos, na ordem das categorias.
+  # Arquivos iniciados por "_" são helpers compartilhados, não módulos.
   mod_listar_ids() {
     local categoria arquivo
     for categoria in "${BDW_CATEGORIAS_ORDEM[@]}"; do
       for arquivo in "$BDW_ROOT/modules/$categoria"/*.sh; do
-        [[ -f "$arquivo" ]] && basename "$arquivo" .sh
+        [[ -f "$arquivo" && "$(basename "$arquivo")" != _* ]] && basename "$arquivo" .sh
       done
     done
   }
