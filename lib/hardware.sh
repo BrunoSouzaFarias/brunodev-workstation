@@ -111,9 +111,12 @@ hardware_detectar() {
   [[ -d /run/systemd/system ]] && BDW_TEM_SYSTEMD=1
   BDW_TEM_GUI=0
   [[ "$BDW_SESSAO" != "nenhuma" ]] && BDW_TEM_GUI=1
+  # Ambiente desktop em maiúsculas (ex: GNOME, KDE, ubuntu:GNOME).
+  BDW_DESKTOP="$(tr '[:lower:]' '[:upper:]' <<<"${XDG_CURRENT_DESKTOP:-nenhum}")"
 
   export BDW_RAM_GB BDW_DISCO_LIVRE_GB BDW_DISCO_TIPO BDW_SECURE_BOOT \
-    BDW_SESSAO BDW_VM BDW_CONTAINER BDW_CHASSI BDW_TEM_SYSTEMD BDW_TEM_GUI
+    BDW_SESSAO BDW_VM BDW_CONTAINER BDW_CHASSI BDW_TEM_SYSTEMD BDW_TEM_GUI \
+    BDW_DESKTOP
 
   log_debug "Hardware: ${BDW_RAM_GB}GB RAM, ${BDW_DISCO_LIVRE_GB}GB livres ($BDW_DISCO_TIPO), sessão=$BDW_SESSAO, vm=$BDW_VM, container=$BDW_CONTAINER"
 }
