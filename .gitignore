@@ -1,0 +1,16 @@
+# Logs e estado local
+*.log
+logs/
+
+# Ferramentas de teste baixadas localmente
+tests/.bats/
+tests/.tmp/
+
+# Artefatos temporários
+*.tmp
+*.swp
+.DS_Store
+
+# Segredos — nunca versionar
+*.env
+!*.env.exemplo

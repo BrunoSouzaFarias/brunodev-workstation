@@ -1,0 +1,7 @@
+# Configuração do ShellCheck para o projeto
+# Permite seguir arquivos de source relativos ao script analisado
+external-sources=true
+source-path=SCRIPTDIR
+
+# SC1091: arquivos sourced dinamicamente (lib/init.sh resolve em runtime)
+disable=SC1091
