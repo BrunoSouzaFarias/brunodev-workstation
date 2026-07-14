@@ -265,9 +265,9 @@ main() {
   esac
 
   ui_banner
-  requisitos_verificar
   sudo_manter_vivo
   bootstrap_executar
+  requisitos_verificar
 
   ui_titulo "Sistema detectado"
   ui_painel_sistema

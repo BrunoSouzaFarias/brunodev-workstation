@@ -13,13 +13,23 @@ BDW_DOWNLOAD_TENTATIVAS="${BDW_DOWNLOAD_TENTATIVAS:-3}"
 BDW_DOWNLOAD_TIMEOUT="${BDW_DOWNLOAD_TIMEOUT:-120}"
 
 # Verifica conectividade com a internet (testa mais de um endpoint).
+# Usa curl se disponível; fallback para wget ou ping quando curl ainda
+# não foi instalado (bootstrap roda depois).
 net_tem_internet() {
   local url
-  for url in "https://github.com" "https://cloudflare.com"; do
-    if curl -fsI --connect-timeout 5 --max-time 10 "$url" >/dev/null 2>&1; then
-      return 0
-    fi
-  done
+  if command -v curl >/dev/null 2>&1; then
+    for url in "https://github.com" "https://cloudflare.com"; do
+      curl -fsI --connect-timeout 5 --max-time 10 "$url" >/dev/null 2>&1 && return 0
+    done
+  elif command -v wget >/dev/null 2>&1; then
+    for url in "https://github.com" "https://cloudflare.com"; do
+      wget -q --spider --timeout=10 "$url" >/dev/null 2>&1 && return 0
+    done
+  else
+    # Sem curl/wget: fallback para ping (não testa HTTPS, mas detecta rede).
+    ping -c1 -W5 github.com >/dev/null 2>&1 && return 0
+    ping -c1 -W5 cloudflare.com >/dev/null 2>&1 && return 0
+  fi
   return 1
 }
 
