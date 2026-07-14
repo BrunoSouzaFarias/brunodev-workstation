@@ -5,6 +5,7 @@
 [![Version](https://img.shields.io/github/v/release/BrunoSouzaFarias/brunodev-workstation)](https://github.com/BrunoSouzaFarias/brunodev-workstation/releases)
 [![Bash](https://img.shields.io/badge/bash-%3E%3D%204.0-blue.svg)](https://www.gnu.org/software/bash/)
 [![Code Style: shfmt](https://img.shields.io/badge/code%20style-shfmt-success.svg)](https://github.com/mvdan/sh)
+[![Website](https://img.shields.io/badge/Website-distro--work.vercel.app-blue?style=flat&logo=vercel)](https://distro-work.vercel.app/)
 
 **Transforme uma instalação limpa do Linux em uma workstation completa de desenvolvimento, DevOps e Inteligência Artificial — com um único comando.**
 
