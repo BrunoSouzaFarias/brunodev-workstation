@@ -12,26 +12,23 @@
 
 ## v2.0 — Mais distribuições Debian/Fedora-like
 
-- [ ] Fedora
-- [ ] Ultramarine
-- [ ] Pop!_OS
-- [ ] Debian
-- [ ] Backend `dnf` em `lib/packages.sh`
-- [ ] Suporte completo ao KDE Plasma (o módulo `kde` já existe como prévia)
-- [ ] Módulo Android Studio
+- [x] Fedora
+- [x] Ultramarine
+- [x] Pop!_OS
+- [x] Debian
+- [x] Backend `dnf` em `lib/packages.sh`
+- [x] Suporte completo ao KDE Plasma (o módulo `kde` já existe como prévia)
 
 ## v3.0 — Arch e derivadas
 
-- [ ] Arch Linux
-- [ ] EndeavourOS
-- [ ] CachyOS
+- [x] Arch Linux
+- [x] EndeavourOS
+- [x] CachyOS
 - [ ] openSUSE
-- [ ] Backend `pacman`/`zypper` em `lib/packages.sh`
+- [x] Backend `pacman` em `lib/packages.sh` (zypper pendente)
 
 ## Ideias em avaliação (sem versão definida)
 
-- Suporte a Kubernetes (k3s/kind) como módulo DevOps
-- Modo "dry-run" (`--simular`) que mostra o plano sem executar nada
 - Exportar/importar seleção de módulos como arquivo de perfil customizado
 - Telemetria opt-in anônima para priorizar módulos mais usados
 

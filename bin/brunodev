@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+# ============================================================================
+# brunodev — CLI de gestão do BrunoDev Workstation (Health Check & utilitários)
+# ============================================================================
+
+set -Eeuo pipefail
+
+# Descobre a raiz real independente de onde for chamado (e se for symlink)
+BDW_ROOT="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/.." 2>/dev/null && pwd)"
+export BDW_ROOT
+
+source "$BDW_ROOT/lib/init.sh"
+sistema_detectar_tudo
+
+exibir_ajuda() {
+  cat <<AJUDA
+$BDW_NOME v$BDW_VERSAO — Gestor da Workstation
+
+Uso: brunodev <comando> [opções]
+
+Comandos:
+  install   Instala novos módulos ou perfis (atalho para install.sh)
+  update    Atualiza os repositórios da workstation (atalho para update.sh)
+  doctor    Verifica a saúde do ambiente (Docker, repos, permissões, ferramentas)
+  help      Exibe esta ajuda
+AJUDA
+}
+
+cmd_doctor() {
+  ui_titulo "Verificação de Saúde (Health Check)"
+  local erros=0 avisos=0
+
+  _check() {
+    local nome="$1" cmd="$2" ok_msg="$3" err_msg="$4" criticidade="${5:-erro}"
+    printf "  %-25s" "$nome..."
+    if eval "$cmd" >/dev/null 2>&1; then
+      printf "%b[OK]%b %s\n" "$BDW_COR_VERDE" "$BDW_COR_RESET" "$ok_msg"
+    else
+      if [[ "$criticidade" == "erro" ]]; then
+        printf "%b[ERRO]%b %s\n" "$BDW_COR_VERMELHO" "$BDW_COR_RESET" "$err_msg"
+        ((erros++)) || true
+      else
+        printf "%b[AVISO]%b %s\n" "$BDW_COR_AMARELO" "$BDW_COR_RESET" "$err_msg"
+        ((avisos++)) || true
+      fi
+    fi
+  }
+
+  echo "Validando permissões e grupos..."
+  _check "Sudo sem senha" "sudo -n true" "Configurado" "Timeout de sudo ou requer senha (não-crítico)" "aviso"
+  _check "Docker Socket" "docker info" "Acessível" "Usuário $USER não está no grupo docker ou daemon parado" "aviso"
+  
+  echo "Validando repositório BDW..."
+  _check "Git Clone" "git -C \"$BDW_ROOT\" status" "Repositório git válido" "Diretório não é um repo git (atualizações via git falharão)" "aviso"
+  _check "Ferramentas Básicas" "command -v curl && command -v jq && command -v wget" "Presentes" "Faltam dependências essenciais do sistema" "erro"
+
+  echo "Validando ambiente de rede..."
+  _check "Internet" "ping -c 1 -W 2 1.1.1.1" "Conectado" "Sem rota para a internet" "erro"
+  _check "DNS GitHub" "ping -c 1 -W 2 github.com" "Resolvido" "Falha ao resolver github.com" "erro"
+
+  echo
+  if ((erros > 0)); then
+    log_erro "Workstation apresenta $erros erro(s) e $avisos aviso(s). Corrija-os para garantir estabilidade."
+    exit 1
+  elif ((avisos > 0)); then
+    log_aviso "Workstation saudável, mas com $avisos aviso(s)."
+  else
+    log_info "Workstation 100% saudável!"
+  fi
+}
+
+comando="${1:-help}"
+shift || true
+
+case "$comando" in
+  install) exec "$BDW_ROOT/install.sh" "$@" ;;
+  update) exec "$BDW_ROOT/update.sh" "$@" ;;
+  doctor) cmd_doctor "$@" ;;
+  help|-h|--help) exibir_ajuda ;;
+  *)
+    ui_erro "Comando desconhecido: $comando"
+    exibir_ajuda
+    exit 1
+    ;;
+esac

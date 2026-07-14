@@ -1,8 +1,10 @@
 # BrunoDev Workstation
 
-![CI](https://github.com/BrunoSouzaFarias/brunodev-workstation/actions/workflows/ci.yml/badge.svg)
-![License](https://img.shields.io/github/license/BrunoSouzaFarias/brunodev-workstation)
-![Version](https://img.shields.io/github/v/release/BrunoSouzaFarias/brunodev-workstation)
+[![CI](https://github.com/BrunoSouzaFarias/brunodev-workstation/actions/workflows/ci.yml/badge.svg)](https://github.com/BrunoSouzaFarias/brunodev-workstation/actions)
+[![License](https://img.shields.io/github/license/BrunoSouzaFarias/brunodev-workstation)](LICENSE)
+[![Version](https://img.shields.io/github/v/release/BrunoSouzaFarias/brunodev-workstation)](https://github.com/BrunoSouzaFarias/brunodev-workstation/releases)
+[![Bash](https://img.shields.io/badge/bash-%3E%3D%204.0-blue.svg)](https://www.gnu.org/software/bash/)
+[![Code Style: shfmt](https://img.shields.io/badge/code%20style-shfmt-success.svg)](https://github.com/mvdan/sh)
 
 **Transforme uma instalação limpa do Linux em uma workstation completa de desenvolvimento, DevOps e Inteligência Artificial — com um único comando.**
 
@@ -29,17 +31,20 @@ O instalador abre uma interface interativa: detecta seu sistema, sugere um perfi
 ./install.sh --modulos docker,vscode  # instala apenas módulos específicos
 ./install.sh --listar                 # lista o catálogo completo de módulos
 ./install.sh --perfis                 # lista os perfis disponíveis
+./install.sh --simular                # Dry-run: mostra o que faria sem instalar nada
 ```
+
+> **Dica**: Use `./scripts/exportar_perfil.sh` para salvar os módulos da sua máquina atual num perfil customizado!
 
 ## Por que este projeto existe
 
 Montar uma workstation de desenvolvimento do zero é repetitivo e propenso a erro: instalar runtimes, configurar Git e SSH, subir bancos de dados, ajustar o shell, instalar ferramentas de IA... O BrunoDev Workstation automatiza esse processo inteiro, de forma seguro para rodar mais de uma vez (idempotente) e fácil de desfazer.
 
-## Requisitos (v1.0)
+## Requisitos (v1.x)
 
 | Requisito | Mínimo |
 |---|---|
-| Distribuição | Ubuntu 24.04 LTS ou superior |
+| Distribuições Suportadas | Debian 12+, Ubuntu 24.04+, Pop!_OS 22.04+<br>Fedora 39+, Ultramarine<br>Arch Linux, EndeavourOS, CachyOS |
 | Disco livre | 10 GB |
 | RAM | 4 GB (recomendado para módulos de IA local) |
 | Internet | Necessária durante a instalação |
@@ -55,11 +60,11 @@ Outras distribuições chegam nas próximas versões — veja o [ROADMAP](docs/R
 | `web` | Desenvolvimento web moderno (front + APIs) |
 | `backend` | APIs, serviços e bancos de dados |
 | `frontend` | Interfaces e tooling JS/TS |
-| `devops` | Containers, automação e segurança |
+| `devops` | Containers, Kubernetes, automação e segurança |
 | `ai-engineer` | IA local (Ollama) e assistentes de código |
 | `data-science` | Python, dados e bancos |
 | `java` | Ecossistema JVM completo (Maven, Gradle) |
-| `android` | Base Java/Gradle (Android Studio na v2.0) |
+| `android` | Base Java/Gradle e Android Studio |
 | `fullstack` | Front + back + bancos |
 | `completo` | Todos os módulos disponíveis |
 | `custom` | Você escolhe módulo por módulo na TUI |
@@ -74,6 +79,7 @@ Detalhes de cada módulo em [docs/MODULOS.md](docs/MODULOS.md).
 4. **Instalação idempotente** — cada módulo verifica se já está instalado e atualizado antes de agir; rodar o instalador de novo nunca duplica trabalho.
 5. **Rollback automático** — se um módulo falhar no meio da instalação, as ações já executadas por ele são desfeitas.
 6. **Manifesto de estado** — tudo o que foi instalado fica registrado em `~/.local/state/brunodev/manifesto`, usado pelo `update.sh` e `uninstall.sh`.
+7. **Simulação (Dry-run)** — verifique o plano de execução exato com a flag `--simular` sem alterar o sistema.
 
 ```bash
 ./update.sh      # atualiza a ferramenta e reprocessa os módulos instalados

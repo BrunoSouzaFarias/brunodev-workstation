@@ -41,11 +41,11 @@ requisitos_verificar() {
 
   # Conectividade.
   if ! net_tem_internet; then
-    log_fatal "Sem conexão com a internet. Verifique sua rede e tente novamente."
+    log_erro "Sem conexão detectável com a internet."
+    log_aviso "A instalação continuará, mas dependências e pacotes podem falhar."
+  else
+    log_sucesso "Conexão com a internet OK"
   fi
-  log_sucesso "Conexão com a internet OK"
-
-  # Espaço em disco.
   if ((BDW_DISCO_LIVRE_GB < BDW_DISCO_MINIMO_GB)); then
     log_fatal "Espaço insuficiente: ${BDW_DISCO_LIVRE_GB}GB livres (mínimo: ${BDW_DISCO_MINIMO_GB}GB)."
   fi

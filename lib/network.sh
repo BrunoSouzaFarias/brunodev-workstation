@@ -13,26 +13,27 @@ BDW_DOWNLOAD_TENTATIVAS="${BDW_DOWNLOAD_TENTATIVAS:-3}"
 BDW_DOWNLOAD_TIMEOUT="${BDW_DOWNLOAD_TIMEOUT:-120}"
 
 # Verifica conectividade com a internet (testa mais de um endpoint).
-# Usa curl se disponível; fallback para wget ou ping quando curl ainda
-# não foi instalado (bootstrap roda depois).
+# Usa múltiplos métodos sequenciais para evitar falsos negativos (ex: SSL inspection).
 net_tem_internet() {
   local url
   if command -v curl >/dev/null 2>&1; then
-    for url in "https://github.com" "https://cloudflare.com"; do
+    for url in "https://github.com" "https://cloudflare.com" "http://clients3.google.com/generate_204"; do
       curl -fsI --connect-timeout 5 --max-time 10 "$url" >/dev/null 2>&1 && return 0
     done
-  elif command -v wget >/dev/null 2>&1; then
+  fi
+
+  if command -v wget >/dev/null 2>&1; then
     for url in "https://github.com" "https://cloudflare.com"; do
       wget -q --spider --timeout=10 "$url" >/dev/null 2>&1 && return 0
     done
-  else
-    # Sem curl/wget: tenta bash TCP socket ou ping.
-    timeout 5 bash -c '</dev/tcp/8.8.8.8/53' >/dev/null 2>&1 && return 0
-    ping -c1 -W5 8.8.8.8 >/dev/null 2>&1 && return 0
-    # ponytail: evita falso-negativo bloqueante; pacotes falharão naturalmente se não houver rede
-    return 0
   fi
-  return 1
+
+  # Fallback: tenta bash TCP socket ou ping.
+  timeout 5 bash -c '</dev/tcp/8.8.8.8/53' >/dev/null 2>&1 && return 0
+  ping -c1 -W5 8.8.8.8 >/dev/null 2>&1 && return 0
+
+  # ponytail: evita falso-negativo bloqueante; pacotes falharão naturalmente se não houver rede
+  return 0
 }
 
 # Baixa uma URL para um destino, com retry e validação.
@@ -65,6 +66,26 @@ net_baixar() {
   rm -f "$destino"
   return 1
   printf '%s' "${url_final##*/tag/}"
+}
+
+# Baixa múltiplas URLs em paralelo.
+# Uso: net_baixar_paralelo <url1> <dest1> <url2> <dest2> ...
+net_baixar_paralelo() {
+  local pids=()
+  local erro=0
+  
+  while (($# >= 2)); do
+    local url="$1" dest="$2"
+    shift 2
+    net_baixar "$url" "$dest" &
+    pids+=($!)
+  done
+
+  for pid in "${pids[@]}"; do
+    wait "$pid" || erro=1
+  done
+
+  return "$erro"
 }
 
 # Executa um script remoto de forma controlada: baixa primeiro, depois roda.

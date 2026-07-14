@@ -56,6 +56,7 @@ Opções:
   --sim, -y           Modo não-interativo: assume "sim" para tudo
   --sem-tui           Desativa a interface rica (gum)
   --listar            Lista todos os módulos disponíveis e sai
+  --config <yaml>     Arquivo de configuração declarativa
   --perfis            Lista os perfis disponíveis e sai
   --debug             Ativa logs detalhados
   --versao            Exibe a versão e sai
@@ -70,6 +71,7 @@ AJUDA
 
 ARG_PERFIL=""
 ARG_MODULOS=""
+ARG_CONFIG=""
 while (($#)); do
   case "$1" in
     --perfil)
@@ -85,6 +87,10 @@ while (($#)); do
     --perfis) ARG_PERFIL="__perfis__" ;;
     --debug) export BDW_LOG_NIVEL=debug ;;
     --dry-run | --simular) export BDW_DRY_RUN=1 ;;
+    --config)
+      ARG_CONFIG="${2:?--config exige um arquivo YAML}"
+      shift
+      ;;
     --versao)
       echo "$BDW_VERSAO"
       exit 0
@@ -141,12 +147,37 @@ modulos_exibir_catalogo() {
 selecionar_modulos() {
   BDW_SELECIONADOS=()
 
+  local base=()
+
+  if [[ -n "$ARG_CONFIG" ]]; then
+    [[ -f "$ARG_CONFIG" ]] || log_fatal "Arquivo de configuração não encontrado: $ARG_CONFIG"
+    
+    # Extração simples (fallback se yq não existir)
+    local cfg_perfil cfg_modulos
+    cfg_perfil="$(grep -E '^profile:[[:space:]]*' "$ARG_CONFIG" | sed -E 's/^profile:[[:space:]]*//' | tr -d '"'\''')"
+    if [[ -n "$cfg_perfil" ]]; then
+      mapfile -t base < <(perfil_carregar "$cfg_perfil")
+    fi
+
+    cfg_modulos="$(awk '/^modules:/{flag=1; next} /^[^ -]/{flag=0} flag && /^[[:space:]]+-[[:space:]]+/{sub(/^[[:space:]]+-[[:space:]]+/, ""); print}' "$ARG_CONFIG" | tr -d '"'\''')"
+    if [[ -n "$cfg_modulos" ]]; then
+      while read -r mod; do
+        [[ -n "$mod" ]] && base+=("$mod")
+      done <<< "$cfg_modulos"
+    fi
+
+    # Remove duplicatas
+    mapfile -t BDW_SELECIONADOS < <(printf "%s\n" "${base[@]}" | sort -u)
+    ((${#BDW_SELECIONADOS[@]})) || log_fatal "Nenhum módulo encontrado em $ARG_CONFIG"
+    export BDW_NAO_INTERATIVO=1 # config assume modo não interativo
+    return 0
+  fi
+
   if [[ -n "$ARG_MODULOS" ]]; then
     IFS=',' read -r -a BDW_SELECIONADOS <<<"$ARG_MODULOS"
     return 0
   fi
 
-  local base=()
   if [[ -n "$ARG_PERFIL" ]]; then
     mapfile -t base < <(perfil_carregar "$ARG_PERFIL")
   else
@@ -319,6 +350,17 @@ main() {
     log_info "Instalação cancelada."
     exit 0
   }
+
+  # Snapshot automático com Timeshift antes de alterar o sistema
+  if command -v timeshift >/dev/null 2>&1 && [[ "${BDW_CONTAINER:-0}" == "0" ]]; then
+    ui_nota "Criando snapshot do sistema..."
+    sudo_manter_vivo
+    if sudo timeshift --create --comments "BDW-pre-install" --scripted >/dev/null 2>&1; then
+      log_sucesso "Snapshot criado com sucesso."
+    else
+      log_aviso "Falha ao criar snapshot com Timeshift."
+    fi
+  fi
 
   executar_instalacao "${ordenados[@]}"
 }

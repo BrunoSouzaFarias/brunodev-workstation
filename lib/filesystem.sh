@@ -51,6 +51,25 @@ fs_link_simbolico() {
   ln -sfn "$origem" "$destino"
 }
 
+# Gerenciador de Dotfiles baseado em GNU Stow ou Fallback
+fs_stow_aplicar() {
+  local pacote="$1" dir_destino="${2:-$HOME}"
+  local dir_origem="$BDW_ROOT/configs/dotfiles"
+  
+  if [[ ! -d "$dir_origem/$pacote" ]]; then
+    log_debug "Pacote stow '$pacote' não encontrado em $dir_origem"
+    return 0
+  fi
+  
+  if command -v stow >/dev/null 2>&1; then
+    stow -t "$dir_destino" -d "$dir_origem" "$pacote"
+    log_sucesso "Dotfiles de '$pacote' aplicados via GNU Stow."
+  else
+    log_aviso "GNU Stow não encontrado. Copiando dotfiles (fallback)..."
+    cp -aT "$dir_origem/$pacote" "$dir_destino/"
+  fi
+}
+
 # Acrescenta uma linha a um arquivo apenas se ela ainda não existir.
 # Uso: fs_adicionar_linha <arquivo> <linha>
 fs_adicionar_linha() {

@@ -1,8 +1,9 @@
-# Perfil: android — base Java/Gradle (Android Studio chega na v2.0)
+# Perfil: android — base Java/Gradle e Android Studio
 sistema
 git
 ssh
 shell
 vscode
 java
+android-studio
 gradle

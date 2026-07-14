@@ -10,7 +10,14 @@
 readonly _BDW_LIB_DISTRO=1
 
 # Distros suportadas na v1.0 (formato "id:versão-mínima").
-readonly BDW_DISTROS_SUPORTADAS=("ubuntu:24.04")
+readonly BDW_DISTROS_SUPORTADAS=(
+  "ubuntu:24.04"
+  "debian:12"
+  "pop:22.04"
+  "fedora:39"
+  "arch:rolling"
+  "endeavouros:rolling"
+)
 
 # Mapeia o par ID/ID_LIKE do os-release para uma família de pacotes.
 # Saída: debian | fedora | arch | suse | desconhecida
@@ -60,8 +67,11 @@ distro_suportada() {
   for entrada in "${BDW_DISTROS_SUPORTADAS[@]}"; do
     id="${entrada%%:*}"
     versao_minima="${entrada##*:}"
-    if [[ "$BDW_DISTRO_ID" == "$id" ]] && versao_maior_igual "$BDW_DISTRO_VERSAO" "$versao_minima"; then
-      return 0
+    if [[ "$BDW_DISTRO_ID" == "$id" ]]; then
+      # "rolling" sempre passa na checagem de versão.
+      if [[ "$versao_minima" == "rolling" ]] || versao_maior_igual "$BDW_DISTRO_VERSAO" "$versao_minima"; then
+        return 0
+      fi
     fi
   done
   return 1

@@ -41,6 +41,29 @@ main() {
     ui_confirmar "Remover ${#selecionados[@]} módulo(s)? Esta ação desfaz instalações e configurações." || exit 0
   fi
 
+  # Trackeamento de dependências: verifica se a remoção quebra módulos que ficarão
+  local removendo=" ${selecionados[*]} "
+  local dependentes_extras=() inst d deps
+  for inst in "${instalados[@]}"; do
+    if [[ ! "$removendo" =~ " $inst " ]]; then
+      deps="$(mod_meta "$inst" BDW_MODULE_DEPS)"
+      for d in $deps; do
+        if [[ "$removendo" =~ " $d " ]]; then
+          dependentes_extras+=("$inst (depende de $d)")
+        fi
+      done
+    fi
+  done
+
+  if ((${#dependentes_extras[@]})); then
+    log_aviso "Aviso de Granularidade: Remover os selecionados pode quebrar os seguintes módulos:"
+    printf '  - %s\n' "${dependentes_extras[@]}"
+    ui_confirmar "Deseja prosseguir e forçar a remoção?" || {
+      log_info "Desinstalação abortada para evitar quebra de dependências."
+      exit 1
+    }
+  fi
+
   sudo_manter_vivo
 
   local id codigo removidos=0 falhas=()

@@ -3,8 +3,8 @@
 # lib/packages.sh — Abstração de gerenciadores de pacotes
 #
 # As funções pkg_* despacham para o gerenciador da família da distro
-# detectada (BDW_DISTRO_FAMILIA). Na v1.0 apenas a família debian (APT)
-# está implementada; fedora/arch/suse retornam erro claro até a v2.0/v3.0.
+# detectada (BDW_DISTRO_FAMILIA). Suporta debian (APT), fedora (DNF), 
+# arch (Pacman) nativamente.
 # Flatpak e Snap são backends complementares, independentes da família.
 # ============================================================================
 
@@ -33,6 +33,14 @@ pkg_atualizar_indice() {
       spin_executar "Atualizando índice de pacotes" \
         como_root env DEBIAN_FRONTEND=noninteractive apt-get update -y || return 1
       ;;
+    fedora)
+      spin_executar "Atualizando índice de pacotes" \
+        como_root dnf makecache || return 1
+      ;;
+    arch)
+      spin_executar "Atualizando índice de pacotes" \
+        como_root pacman -Sy || return 1
+      ;;
     *) _pkg_nao_suportado ;;
   esac
   _BDW_INDICE_ATUALIZADO=1
@@ -42,6 +50,8 @@ pkg_atualizar_indice() {
 pkg_existe() {
   case "$BDW_DISTRO_FAMILIA" in
     debian) dpkg -s "$1" >/dev/null 2>&1 ;;
+    fedora) rpm -q "$1" >/dev/null 2>&1 ;;
+    arch) pacman -Qs "^${1}$" >/dev/null 2>&1 ;;
     *) return 1 ;;
   esac
 }
@@ -65,6 +75,14 @@ pkg_instalar() {
       spin_executar "Instalando pacotes: ${faltando[*]}" \
         como_root env DEBIAN_FRONTEND=noninteractive apt-get install -y "${faltando[@]}"
       ;;
+    fedora)
+      spin_executar "Instalando pacotes: ${faltando[*]}" \
+        como_root dnf install -y "${faltando[@]}"
+      ;;
+    arch)
+      spin_executar "Instalando pacotes: ${faltando[*]}" \
+        como_root pacman -S --noconfirm "${faltando[@]}"
+      ;;
     *) _pkg_nao_suportado ;;
   esac
 }
@@ -80,19 +98,57 @@ pkg_remover() {
       spin_executar "Removendo pacotes: $*" \
         como_root env DEBIAN_FRONTEND=noninteractive apt-get remove -y "$@"
       ;;
+    fedora)
+      spin_executar "Removendo pacotes: $*" \
+        como_root dnf remove -y "$@"
+      ;;
+    arch)
+      spin_executar "Removendo pacotes: $*" \
+        como_root pacman -Rns --noconfirm "$@"
+      ;;
     *) _pkg_nao_suportado ;;
   esac
 }
 
-# Instala um pacote .deb local (resolvendo dependências).
-pkg_instalar_deb() {
+# Instala um pacote local (deb/rpm).
+pkg_instalar_local() {
   local arquivo="$1"
   if [[ "${BDW_DRY_RUN:-0}" == "1" ]]; then
-    log_info "[DRY-RUN] Instalaria .deb: $(basename "$arquivo")"
+    log_info "[DRY-RUN] Instalaria pacote local: $(basename "$arquivo")"
     return 0
   fi
-  spin_executar "Instalando $(basename "$arquivo")" \
-    como_root env DEBIAN_FRONTEND=noninteractive apt-get install -y "$arquivo"
+  case "$BDW_DISTRO_FAMILIA" in
+    debian)
+      spin_executar "Instalando $(basename "$arquivo")" \
+        como_root env DEBIAN_FRONTEND=noninteractive apt-get install -y "$arquivo"
+      ;;
+    fedora)
+      spin_executar "Instalando $(basename "$arquivo")" \
+        como_root dnf install -y "$arquivo"
+      ;;
+    arch)
+      spin_executar "Instalando $(basename "$arquivo")" \
+        como_root pacman -U --noconfirm "$arquivo"
+      ;;
+    *) _pkg_nao_suportado ;;
+  esac
+}
+
+# Adiciona um repositório de terceiros (específico por família).
+# Para APT: <nome> <url-da-chave> <linha-do-repositorio>
+# Para DNF: <url-do-repo-file>
+pkg_adicionar_repo() {
+  case "$BDW_DISTRO_FAMILIA" in
+    debian) pkg_adicionar_repo_apt "$1" "$2" "$3" ;;
+    fedora)
+      if [[ "${BDW_DRY_RUN:-0}" == "1" ]]; then
+        log_info "[DRY-RUN] Adicionaria repo DNF: $1"
+        return 0
+      fi
+      como_root dnf config-manager --add-repo "$1"
+      ;;
+    arch) log_aviso "Repositórios no Arch devem ser configurados via pacman.conf ou AUR." ;;
+  esac
 }
 
 # Adiciona um repositório APT de terceiros com chave GPG dedicada.
@@ -124,7 +180,30 @@ pkg_adicionar_repo_apt() {
     return 0
   fi
 
-  echo "$linha_repo"
+  echo "$linha_repo" | fs_escrever_root "$lista"
+  _BDW_INDICE_ATUALIZADO=0 # força novo apt-get update na próxima instalação
+  log_debug "Repositório APT adicionado: $nome"
+}
+
+# Remove um repositório APT adicionado por pkg_adicionar_repo_apt.
+pkg_remover_repo_apt() {
+  local nome="$1"
+  como_root rm -f "/etc/apt/sources.list.d/${nome}.list" "/etc/apt/keyrings/${nome}.gpg"
+}
+
+# --- Flatpak ----------------------------------------------------------------
+
+# Garante flatpak instalado e o remote flathub configurado.
+flatpak_garantir() {
+  comando_existe flatpak || pkg_instalar flatpak || return 1
+  if ! flatpak remotes 2>/dev/null | grep -q flathub; then
+    spin_executar "Configurando Flathub" \
+      como_root flatpak remote-add --if-not-exists flathub \
+      https://dl.flathub.org/repo/flathub.flatpakrepo
+  fi
+}
+
+# Verifica se um app Flatpak está instalado.
 flatpak_existe() {
   flatpak info "$1" >/dev/null 2>&1
 }
