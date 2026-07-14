@@ -1,5 +1,9 @@
 # BrunoDev Workstation
 
+![CI](https://github.com/BrunoSouzaFarias/brunodev-workstation/actions/workflows/ci.yml/badge.svg)
+![License](https://img.shields.io/github/license/BrunoSouzaFarias/brunodev-workstation)
+![Version](https://img.shields.io/github/v/release/BrunoSouzaFarias/brunodev-workstation)
+
 **Transforme uma instalação limpa do Linux em uma workstation completa de desenvolvimento, DevOps e Inteligência Artificial — com um único comando.**
 
 Inspirado em ferramentas como [Omakub](https://omakub.org), Homebrew e Oh My Zsh, mas construído do zero como um produto: modular, idempotente, reversível e com testes automatizados.

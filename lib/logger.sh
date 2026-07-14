@@ -39,7 +39,12 @@ _log_emitir() {
   local nivel="$1" simbolo="$2" cor="$3" mensagem="$4"
   _log_arquivo "$nivel" "$mensagem"
   (($(_log_peso "$nivel") < $(_log_peso "$BDW_LOG_NIVEL"))) && return 0
-  printf '%b%s%b %s\n' "$cor" "$simbolo" "$BDW_COR_RESET" "$mensagem" >&2
+  
+  if [[ "${BDW_NAO_INTERATIVO:-0}" == "1" ]]; then
+    printf '%b%s%b %s %s\n' "$cor" "$simbolo" "$BDW_COR_RESET" "$(date '+%H:%M:%S')" "$mensagem" >&2
+  else
+    printf '%b%s%b %s\n' "$cor" "$simbolo" "$BDW_COR_RESET" "$mensagem" >&2
+  fi
 }
 
 log_debug() { _log_emitir debug "·" "$BDW_COR_CINZA" "$*"; }

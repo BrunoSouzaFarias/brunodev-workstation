@@ -19,6 +19,12 @@ spin_executar() {
   local mensagem="$1"
   shift
 
+  if [[ "${BDW_DRY_RUN:-0}" == "1" ]]; then
+    log_info "[SIMULAÇÃO] $mensagem"
+    log_debug "Comando simulado: $*"
+    return 0
+  fi
+
   # Sem TTY ou em modo não-interativo: executa direto, sem animação.
   if [[ ! -t 1 || "${BDW_NAO_INTERATIVO:-0}" == "1" ]]; then
     log_info "$mensagem..."

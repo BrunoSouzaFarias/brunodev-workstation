@@ -84,6 +84,7 @@ while (($#)); do
     --listar) ARG_PERFIL="__listar__" ;;
     --perfis) ARG_PERFIL="__perfis__" ;;
     --debug) export BDW_LOG_NIVEL=debug ;;
+    --dry-run | --simular) export BDW_DRY_RUN=1 ;;
     --versao)
       echo "$BDW_VERSAO"
       exit 0
@@ -238,12 +239,44 @@ executar_instalacao() {
     printf '%b✖ Falhas (%d):%b %s\n' "$BDW_COR_VERMELHO" "${#falhas[@]}" "$BDW_COR_RESET" "${falhas[*]}"
   [[ -n "${BDW_ARQ_LOG:-}" ]] && printf '%bLog completo: %s%b\n' "$BDW_COR_FRACO" "$BDW_ARQ_LOG" "$BDW_COR_RESET"
 
+  # --- Resumo exportável ---
+  _gerar_resumo_exportavel "$instalados" "$pulados" "$incompativeis" "$falhas"
+
+  # --- Notificação desktop ---
+  if command -v notify-send &>/dev/null; then
+    if ((${#falhas[@]} == 0)); then
+      notify-send -i dialog-information "$BDW_NOME" "Instalação concluída com sucesso! (${#instalados[@]} módulos)" 2>/dev/null || true
+    else
+      notify-send -i dialog-warning "$BDW_NOME" "Instalação concluída com ${#falhas[@]} falha(s)." 2>/dev/null || true
+    fi
+  fi
+
   if ((${#instalados[@]})); then
     echo
     ui_nota "Abra um novo terminal (ou faça logout/login) para carregar PATH, grupos e shell atualizados."
   fi
 
   ((${#falhas[@]} == 0))
+}
+
+# Gera resumo em texto para compartilhar em issues / debug.
+_gerar_resumo_exportavel() {
+  local arq_resumo="$BDW_DIR_ESTADO/ultimo-resumo.txt"
+  mkdir -p "$BDW_DIR_ESTADO"
+  {
+    echo "===== $BDW_NOME v$BDW_VERSAO — Resumo da instalação ====="
+    echo "Data: $(date '+%Y-%m-%d %H:%M:%S')"
+    echo "Distro: ${BDW_DISTRO_ID:-?} ${BDW_DISTRO_VERSAO:-?}"
+    echo "Kernel: $(uname -r)"
+    echo ""
+    echo "Instalados: ${instalados[*]-nenhum}"
+    echo "Já existiam: ${pulados[*]-nenhum}"
+    echo "Incompatíveis: ${incompativeis[*]-nenhum}"
+    echo "Falhas: ${falhas[*]-nenhum}"
+    echo ""
+    [[ -n "${BDW_ARQ_LOG:-}" ]] && echo "Log: $BDW_ARQ_LOG"
+  } >"$arq_resumo"
+  log_debug "Resumo exportável salvo em: $arq_resumo"
 }
 
 # --- Fluxo principal ---------------------------------------------------------------

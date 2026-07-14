@@ -21,9 +21,23 @@ O que deveria ter acontecido.
 
 ## Ambiente
 
-- Distribuição e versão: `cat /etc/os-release`
+- Distribuição e versão: `cat /etc/os-release | head -4`
 - Versão do BrunoDev Workstation: `./install.sh --versao`
-- Log da sessão (`~/.local/state/brunodev/logs/*.log`), se houver:
+- Kernel: `uname -r`
+
+## Log da sessão
+
+Cole as últimas 100 linhas do log:
+
+```bash
+tail -100 ~/.local/state/brunodev/logs/install-*.log
+```
+
+Ou cole o resumo:
+
+```bash
+cat ~/.local/state/brunodev/ultimo-resumo.txt
+```
 
 ## Contexto adicional
 

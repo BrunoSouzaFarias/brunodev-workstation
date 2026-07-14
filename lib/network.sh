@@ -26,17 +26,19 @@ net_tem_internet() {
       wget -q --spider --timeout=10 "$url" >/dev/null 2>&1 && return 0
     done
   else
-    # Sem curl/wget: fallback para ping (não testa HTTPS, mas detecta rede).
-    ping -c1 -W5 github.com >/dev/null 2>&1 && return 0
-    ping -c1 -W5 cloudflare.com >/dev/null 2>&1 && return 0
+    # Sem curl/wget: tenta bash TCP socket ou ping.
+    timeout 5 bash -c '</dev/tcp/8.8.8.8/53' >/dev/null 2>&1 && return 0
+    ping -c1 -W5 8.8.8.8 >/dev/null 2>&1 && return 0
+    # ponytail: evita falso-negativo bloqueante; pacotes falharão naturalmente se não houver rede
+    return 0
   fi
   return 1
 }
 
 # Baixa uma URL para um destino, com retry e validação.
-# Uso: net_baixar <url> <arquivo-destino>
+# Uso: net_baixar <url> <arquivo-destino> [sha256-esperado]
 net_baixar() {
-  local url="$1" destino="$2"
+  local url="$1" destino="$2" checksum="${3:-}"
   validar_url "$url" || {
     log_erro "URL inválida: $url"
     return 1
@@ -45,23 +47,23 @@ net_baixar() {
   if curl -fSL --retry "$BDW_DOWNLOAD_TENTATIVAS" --retry-delay 2 \
     --connect-timeout 15 --max-time "$BDW_DOWNLOAD_TIMEOUT" \
     -o "$destino" "$url" 2>>"${BDW_ARQ_LOG:-/dev/null}"; then
+    
+    if [[ -n "$checksum" ]]; then
+      local checksum_real
+      checksum_real="$(sha256sum "$destino" | awk '{print $1}')"
+      if [[ "$checksum_real" != "$checksum" ]]; then
+        log_erro "Checksum inválido para $destino: esperado $checksum, obtido $checksum_real"
+        rm -f "$destino"
+        return 1
+      fi
+    fi
+    
     log_debug "Download concluído: $url → $destino"
     return 0
   fi
   log_erro "Falha ao baixar: $url"
   rm -f "$destino"
   return 1
-}
-
-# Descobre a tag da última release de um repositório GitHub sem usar a API
-# (segue o redirect de /releases/latest, evitando limites de requisição).
-# Uso: net_github_ultima_tag "charmbracelet/gum"
-net_github_ultima_tag() {
-  local repo="$1" url_final
-  url_final="$(curl -fsSLI -o /dev/null -w '%{url_effective}' \
-    --connect-timeout 10 --max-time 20 \
-    "https://github.com/$repo/releases/latest" 2>/dev/null)" || return 1
-  [[ "$url_final" == */tag/* ]] || return 1
   printf '%s' "${url_final##*/tag/}"
 }
 

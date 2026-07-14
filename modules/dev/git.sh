@@ -44,6 +44,26 @@ module_configurar() {
   git config --global include.path "$_GIT_CONFIG_BASE_DESTINO"
 
   executar_logado git lfs install --skip-repo
+
+  # --- Assinatura de commits (SSH) ---
+  # ponytail: suporte GPG quando demanda surgir; SSH cobre 90% dos casos
+  if ui_confirmar "Ativar assinatura de commits via SSH?"; then
+    local chave_ssh=""
+    # Tenta encontrar chave SSH existente
+    for f in "$HOME/.ssh/id_ed25519.pub" "$HOME/.ssh/id_rsa.pub"; do
+      [[ -f "$f" ]] && chave_ssh="$f" && break
+    done
+    if [[ -z "$chave_ssh" ]]; then
+      log_aviso "Nenhuma chave SSH encontrada. Gere com: ssh-keygen -t ed25519"
+    else
+      git config --global gpg.format ssh
+      git config --global user.signingkey "$chave_ssh"
+      git config --global commit.gpgsign true
+      git config --global tag.gpgsign true
+      log_sucesso "Assinatura de commits ativada com: $chave_ssh"
+    fi
+  fi
+
   log_sucesso "Git configurado para: ${nome:-?} <${email:-?}>"
 }
 

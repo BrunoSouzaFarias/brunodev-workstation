@@ -23,6 +23,11 @@ _pkg_nao_suportado() {
 # Atualiza o índice de pacotes (uma vez por sessão).
 pkg_atualizar_indice() {
   [[ "$_BDW_INDICE_ATUALIZADO" == "1" ]] && return 0
+  if [[ "${BDW_DRY_RUN:-0}" == "1" ]]; then
+    log_info "[DRY-RUN] Atualizaria índice de pacotes ($BDW_DISTRO_FAMILIA)"
+    _BDW_INDICE_ATUALIZADO=1
+    return 0
+  fi
   case "$BDW_DISTRO_FAMILIA" in
     debian)
       spin_executar "Atualizando índice de pacotes" \
@@ -49,6 +54,11 @@ pkg_instalar() {
   done
   ((${#faltando[@]} == 0)) && return 0
 
+  if [[ "${BDW_DRY_RUN:-0}" == "1" ]]; then
+    log_info "[DRY-RUN] Instalaria pacotes: ${faltando[*]}"
+    return 0
+  fi
+
   pkg_atualizar_indice || return 1
   case "$BDW_DISTRO_FAMILIA" in
     debian)
@@ -61,6 +71,10 @@ pkg_instalar() {
 
 # Remove um ou mais pacotes nativos.
 pkg_remover() {
+  if [[ "${BDW_DRY_RUN:-0}" == "1" ]]; then
+    log_info "[DRY-RUN] Removeria pacotes: $*"
+    return 0
+  fi
   case "$BDW_DISTRO_FAMILIA" in
     debian)
       spin_executar "Removendo pacotes: $*" \
@@ -73,6 +87,10 @@ pkg_remover() {
 # Instala um pacote .deb local (resolvendo dependências).
 pkg_instalar_deb() {
   local arquivo="$1"
+  if [[ "${BDW_DRY_RUN:-0}" == "1" ]]; then
+    log_info "[DRY-RUN] Instalaria .deb: $(basename "$arquivo")"
+    return 0
+  fi
   spin_executar "Instalando $(basename "$arquivo")" \
     como_root env DEBIAN_FRONTEND=noninteractive apt-get install -y "$arquivo"
 }
@@ -101,30 +119,12 @@ pkg_adicionar_repo_apt() {
     rm -f "$tmp"
   fi
 
-  echo "$linha_repo" | fs_escrever_root "$lista"
-  _BDW_INDICE_ATUALIZADO=0 # força novo apt-get update na próxima instalação
-  log_debug "Repositório APT adicionado: $nome"
-}
-
-# Remove um repositório APT adicionado por pkg_adicionar_repo_apt.
-pkg_remover_repo_apt() {
-  local nome="$1"
-  como_root rm -f "/etc/apt/sources.list.d/${nome}.list" "/etc/apt/keyrings/${nome}.gpg"
-}
-
-# --- Flatpak ----------------------------------------------------------------
-
-# Garante flatpak instalado e o remote flathub configurado.
-flatpak_garantir() {
-  comando_existe flatpak || pkg_instalar flatpak || return 1
-  if ! flatpak remotes 2>/dev/null | grep -q flathub; then
-    spin_executar "Configurando Flathub" \
-      como_root flatpak remote-add --if-not-exists flathub \
-      https://dl.flathub.org/repo/flathub.flatpakrepo
+  if [[ "${BDW_DRY_RUN:-0}" == "1" ]]; then
+    log_info "[DRY-RUN] Adicionaria repo APT: $nome"
+    return 0
   fi
-}
 
-# Verifica se um app Flatpak está instalado.
+  echo "$linha_repo"
 flatpak_existe() {
   flatpak info "$1" >/dev/null 2>&1
 }

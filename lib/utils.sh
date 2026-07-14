@@ -28,6 +28,10 @@ requer_comandos() {
 executar_com_timeout() {
   local segundos="$1"
   shift
+  if [[ "${BDW_DRY_RUN:-0}" == "1" ]]; then
+    log_debug "[SIMULAÇÃO] executando (timeout ${segundos}s): $*"
+    return 0
+  fi
   if [[ -n "${BDW_ARQ_LOG:-}" ]]; then
     timeout --foreground "$segundos" "$@" >>"$BDW_ARQ_LOG" 2>&1
   else
@@ -37,6 +41,10 @@ executar_com_timeout() {
 
 # Executa um comando silenciosamente, direcionando a saída para o log.
 executar_logado() {
+  if [[ "${BDW_DRY_RUN:-0}" == "1" ]]; then
+    log_debug "[SIMULAÇÃO] executando logado: $*"
+    return 0
+  fi
   if [[ -n "${BDW_ARQ_LOG:-}" ]]; then
     "$@" >>"$BDW_ARQ_LOG" 2>&1
   else
