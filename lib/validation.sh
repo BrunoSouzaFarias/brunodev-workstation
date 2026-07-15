@@ -23,6 +23,11 @@ validar_url() {
   [[ "$1" =~ ^https?://[A-Za-z0-9.-]+(:[0-9]+)?(/.*)?$ ]]
 }
 
+# Valida uma URL exigindo HTTPS. Usada em downloads e scripts remotos (evita MITM).
+validar_url_https() {
+  [[ "$1" =~ ^https://[A-Za-z0-9.-]+(:[0-9]+)?(/.*)?$ ]]
+}
+
 # Valida um número inteiro não-negativo.
 validar_inteiro() {
   [[ "$1" =~ ^[0-9]+$ ]]

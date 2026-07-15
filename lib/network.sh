@@ -40,8 +40,8 @@ net_tem_internet() {
 # Uso: net_baixar <url> <arquivo-destino> [sha256-esperado]
 net_baixar() {
   local url="$1" destino="$2" checksum="${3:-}"
-  validar_url "$url" || {
-    log_erro "URL inválida: $url"
+  validar_url_https "$url" || {
+    log_erro "URL inválida ou insegura (exige https://): $url"
     return 1
   }
   mkdir -p "$(dirname "$destino")"
@@ -65,7 +65,6 @@ net_baixar() {
   log_erro "Falha ao baixar: $url"
   rm -f "$destino"
   return 1
-  printf '%s' "${url_final##*/tag/}"
 }
 
 # Baixa múltiplas URLs em paralelo.
