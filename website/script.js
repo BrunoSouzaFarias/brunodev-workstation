@@ -1,6 +1,9 @@
 // --- Translations ---
 const translations = {
     'pt-BR': {
+        'nav-features': 'Recursos',
+        'nav-profiles': 'Perfis',
+        'nav-how': 'Como Funciona',
         'nav-github': 'GitHub',
         'hero-badge': 'v1.x Disponível Agora',
         'hero-title': 'Seu Linux. <br class="hidden sm:block" /> Suas Regras.',
@@ -30,6 +33,9 @@ const translations = {
         'feat-4-desc': 'Módulos prontos para Kubernetes, Docker, Ollama, Claude e ecossistema completo.'
     },
     'en': {
+        'nav-features': 'Features',
+        'nav-profiles': 'Profiles',
+        'nav-how': 'How it Works',
         'nav-github': 'GitHub',
         'hero-badge': 'v1.x Available Now',
         'hero-title': 'Your Linux. <br class="hidden sm:block" /> Your Rules.',
@@ -282,17 +288,53 @@ renderProfile('developer');
 updateLanguage(currentLang);
 
 
-// --- Copy Command Button ---
-const copyBtn = document.getElementById('copyBtn');
-const fullCommand = "bash <(curl -fsSL https://raw.githubusercontent.com/BrunoSouzaFarias/brunodev-workstation/main/install.sh)";
-copyBtn.addEventListener('click', async () => {
+// --- Installation Tabs & Copy ---
+const installCmds = {
+    'curl': 'bash <(curl -fsSL https://raw.githubusercontent.com/BrunoSouzaFarias/brunodev-workstation/main/install.sh)',
+    'wget': 'bash <(wget -qO- https://raw.githubusercontent.com/BrunoSouzaFarias/brunodev-workstation/main/install.sh)',
+    'git': 'git clone https://github.com/BrunoSouzaFarias/brunodev-workstation.git && cd brunodev-workstation && ./install.sh'
+};
+
+let currentCmd = installCmds['curl'];
+const copyBox = document.getElementById('copyBox');
+const installCmdText = document.getElementById('install-cmd-text');
+const copyIconBox = document.getElementById('copyIconBox');
+const installTabs = document.querySelectorAll('.install-tab');
+
+// Tab Switching
+installTabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+        installTabs.forEach(t => {
+            t.classList.remove('text-brand-400', 'bg-brand-500/10');
+            t.classList.add('text-slate-400');
+        });
+        tab.classList.remove('text-slate-400');
+        tab.classList.add('text-brand-400', 'bg-brand-500/10');
+        
+        const cmdKey = tab.getAttribute('data-cmd');
+        currentCmd = installCmds[cmdKey];
+        installCmdText.textContent = currentCmd;
+    });
+});
+
+// Init tabs styling
+document.querySelector('[data-cmd="curl"]').classList.add('text-brand-400', 'bg-brand-500/10');
+document.querySelector('[data-cmd="curl"]').classList.remove('text-slate-400');
+installCmdText.textContent = currentCmd;
+
+// Copy logic
+copyBox.addEventListener('click', async () => {
     try {
-        await navigator.clipboard.writeText(fullCommand);
-        const originalHtml = copyBtn.innerHTML;
-        copyBtn.innerHTML = `<i data-lucide="check" class="w-4 h-4 text-green-600"></i><span class="text-green-600">Copiado!</span>`;
+        await navigator.clipboard.writeText(currentCmd);
+        copyIconBox.innerHTML = `<i data-lucide="check" class="w-4 h-4"></i>`;
+        copyIconBox.classList.remove('text-brand-400', 'bg-brand-500/20');
+        copyIconBox.classList.add('text-green-400', 'bg-green-500/20');
         lucide.createIcons();
+        
         setTimeout(() => {
-            copyBtn.innerHTML = originalHtml;
+            copyIconBox.innerHTML = `<i data-lucide="copy" class="w-4 h-4"></i>`;
+            copyIconBox.classList.add('text-brand-400', 'bg-brand-500/20');
+            copyIconBox.classList.remove('text-green-400', 'bg-green-500/20');
             lucide.createIcons();
         }, 2000);
     } catch (err) {
