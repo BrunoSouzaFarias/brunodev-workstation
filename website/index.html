@@ -1,10 +1,20 @@
-<![CDATA[<!DOCTYPE html>
+meu <![CDATA[<!DOCTYPE html>
 <html lang="pt-BR" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BrunoDev Workstation</title>
-    <meta name="description" content="Transforme uma instalação limpa do Linux em uma workstation completa.">
+    <meta name="description" content="Transforme uma instalação limpa do Linux em uma workstation completa. Modular, idempotente e reversível.">
+    
+    <!-- Open Graph / SEO -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://distro-work.vercel.app/">
+    <meta property="og:title" content="BrunoDev Workstation">
+    <meta property="og:description" content="Transforme uma instalação limpa do Linux em uma workstation completa de desenvolvimento, DevOps e IA.">
+    
+    <!-- Favicon (Emoji SVG) -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐧</text></svg>">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -248,7 +258,7 @@
         <div class="max-w-7xl mx-auto px-6">
             <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <!-- Card 1 -->
-                <div class="p-6 rounded-2xl bg-slate-900/40 border border-white/5 hover:border-brand-500/30 hover:bg-slate-900/60 transition-colors group">
+                <div class="p-6 rounded-2xl bg-slate-900/40 border border-white/5 hover:border-brand-500/30 hover:bg-slate-900/60 transition-colors group motion-reduce:transition-none">
                     <div class="w-12 h-12 rounded-lg bg-brand-500/10 flex items-center justify-center text-brand-400 mb-4 group-hover:scale-110 transition-transform">
                         <i data-lucide="blocks"></i>
                     </div>
@@ -257,7 +267,7 @@
                     <a href="https://github.com/BrunoSouzaFarias/brunodev-workstation/blob/main/lib/module.sh" target="_blank" class="text-xs text-brand-400 hover:text-brand-300 font-medium inline-flex items-center gap-1">Ver lib/module.sh <i data-lucide="external-link" class="w-3 h-3"></i></a>
                 </div>
                 <!-- Card 2 -->
-                <div class="p-6 rounded-2xl bg-slate-900/40 border border-white/5 hover:border-purple-500/30 hover:bg-slate-900/60 transition-colors group">
+                <div class="p-6 rounded-2xl bg-slate-900/40 border border-white/5 hover:border-purple-500/30 hover:bg-slate-900/60 transition-colors group motion-reduce:transition-none">
                     <div class="w-12 h-12 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-400 mb-4 group-hover:scale-110 transition-transform">
                         <i data-lucide="monitor-smartphone"></i>
                     </div>
@@ -266,7 +276,7 @@
                     <a href="https://github.com/BrunoSouzaFarias/brunodev-workstation/blob/main/lib/packages.sh" target="_blank" class="text-xs text-brand-400 hover:text-brand-300 font-medium inline-flex items-center gap-1">Ver lib/packages.sh <i data-lucide="external-link" class="w-3 h-3"></i></a>
                 </div>
                 <!-- Card 3 -->
-                <div class="p-6 rounded-2xl bg-slate-900/40 border border-white/5 hover:border-green-500/30 hover:bg-slate-900/60 transition-colors group">
+                <div class="p-6 rounded-2xl bg-slate-900/40 border border-white/5 hover:border-green-500/30 hover:bg-slate-900/60 transition-colors group motion-reduce:transition-none">
                     <div class="w-12 h-12 rounded-lg bg-green-500/10 flex items-center justify-center text-green-400 mb-4 group-hover:scale-110 transition-transform">
                         <i data-lucide="history"></i>
                     </div>
@@ -275,7 +285,7 @@
                     <a href="https://github.com/BrunoSouzaFarias/brunodev-workstation/blob/main/uninstall.sh" target="_blank" class="text-xs text-brand-400 hover:text-brand-300 font-medium inline-flex items-center gap-1">Ver uninstall.sh <i data-lucide="external-link" class="w-3 h-3"></i></a>
                 </div>
                 <!-- Card 4 -->
-                <div class="p-6 rounded-2xl bg-slate-900/40 border border-white/5 hover:border-blue-500/30 hover:bg-slate-900/60 transition-colors group">
+                <div class="p-6 rounded-2xl bg-slate-900/40 border border-white/5 hover:border-blue-500/30 hover:bg-slate-900/60 transition-colors group motion-reduce:transition-none">
                     <div class="w-12 h-12 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-400 mb-4 group-hover:scale-110 transition-transform">
                         <i data-lucide="cpu"></i>
                     </div>
