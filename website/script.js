@@ -341,3 +341,21 @@ copyBox.addEventListener('click', async () => {
         console.error('Failed to copy', err);
     }
 });
+
+
+// --- Scroll Reveal ---
+const revealElements = document.querySelectorAll('.reveal');
+const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add('active');
+            revealObserver.unobserve(entry.target); // Reveal only once
+        }
+    });
+}, {
+    root: null,
+    threshold: 0.15,
+    rootMargin: "0px 0px -50px 0px"
+});
+
+revealElements.forEach(el => revealObserver.observe(el));
